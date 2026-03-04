@@ -1,6 +1,4 @@
 fastapi
 uvicorn[standard]
 websockets
-torch
 numpy
-scipy
