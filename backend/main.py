@@ -71,6 +71,13 @@ async def health():
         "pipeline_ready": pipeline is not None,
     }
 
+@app.get("/")
+async def root():
+    return {
+        "message": "Silent Speech Avatar Backend Running",
+        "status": "ok"
+    }
+
 
 # ─────────────────────────────────────────────
 # WebSocket inference endpoint
