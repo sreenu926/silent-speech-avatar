@@ -1,7 +1,6 @@
 fastapi
-uvicorn[standard]
+uvicorn
 websockets
 numpy
-
---extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.2.1+cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
