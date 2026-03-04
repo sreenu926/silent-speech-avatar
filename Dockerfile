@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir fastapi uvicorn websockets numpy python-multipart
+RUN pip install --no-cache-dir "numpy<2"
+
+RUN pip install --no-cache-dir fastapi uvicorn websockets python-multipart openai-whisper
 
 RUN pip install --no-cache-dir torch==2.2.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
 
