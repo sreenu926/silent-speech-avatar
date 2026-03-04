@@ -40,7 +40,9 @@ RUN pip install --no-cache-dir \
     tiktoken \
     tqdm \
     more-itertools \
-    transformers
+    transformers \
+    numba \
+    llvmlite
 
 # Copy project files
 COPY . .
