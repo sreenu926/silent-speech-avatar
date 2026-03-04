@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Silent Speech Recognition — 3D Avatar System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f8f9fa;
+        --surface: #ffffff;
+        --border: #e0e4e8;
+        --text: #1a1f2e;
+        --dim: #6b7280;
+        --accent: #2563eb;
+        --accent2: #16a34a;
+        --danger: #dc2626;
+        --radius: 8px;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        font-family: "Inter", sans-serif;
+        color: var(--text);
+        min-height: 100vh;
+      }
+      header {
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .header-left h1 {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header-left p {
+        font-size: 11px;
+        color: var(--dim);
+        margin-top: 2px;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--dim);
+      }
+      .ws-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--bg);
+      }
+      .ws-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #9ca3af;
+        transition: background 0.3s;
+      }
+      .ws-dot.live {
+        background: var(--accent2);
+      }
+      .ws-dot.error {
+        background: var(--danger);
+      }
+      .mode-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        user-select: none;
+      }
+      .mode-badge.demo {
+        border-color: #f59e0b;
+        background: #fffbeb;
+        color: #b45309;
+      }
+      .mode-badge.live {
+        border-color: var(--accent2);
+        background: #f0fdf4;
+        color: #15803d;
+      }
+      main {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 20px;
+        padding: 24px 32px;
+        max-width: 1280px;
+        margin: 0 auto;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+      .card-header {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--dim);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-family: "JetBrains Mono", monospace;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .avatar-card {
+        display: flex;
+        flex-direction: column;
+      }
+      #three-canvas {
+        width: 100%;
+        height: 480px;
+        display: block;
+      }
+      .avatar-footer {
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--border);
+      }
+      .predicted-word {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 36px;
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: -1px;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: all 0.25s ease;
+        min-width: 200px;
+      }
+      .predicted-word.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .conf-section {
+        text-align: right;
+      }
+      .conf-label {
+        font-size: 10px;
+        color: var(--dim);
+        font-family: "JetBrains Mono", monospace;
+        margin-bottom: 6px;
+      }
+      .conf-bar-bg {
+        width: 160px;
+        height: 5px;
+        background: var(--border);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-left: auto;
+      }
+      .conf-bar-fill {
+        height: 100%;
+        background: var(--accent2);
+        border-radius: 3px;
+        width: 0%;
+        transition: width 0.4s ease;
+      }
+      .conf-pct {
+        font-size: 20px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+        margin-top: 4px;
+      }
+      .vocab-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        padding: 12px 18px;
+        border-top: 1px solid var(--border);
+      }
+      .chip {
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-size: 10px;
+        font-family: "JetBrains Mono", monospace;
+        color: var(--dim);
+        transition: all 0.2s;
+        background: var(--bg);
+        cursor: pointer;
+        user-select: none;
+      }
+      .chip:hover {
+        border-color: var(--accent);
+      }
+      .chip.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: #eff6ff;
+        font-weight: 600;
+      }
+      .chip .key-hint {
+        font-size: 8px;
+        color: #9ca3af;
+        margin-left: 3px;
+      }
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .record-card {
+        padding: 18px;
+      }
+      .record-btn {
+        width: 100%;
+        padding: 14px;
+        border: 1.5px solid var(--danger);
+        background: transparent;
+        color: var(--danger);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .record-btn:hover {
+        background: #fef2f2;
+      }
+      .record-btn.recording {
+        background: var(--danger);
+        color: white;
+      }
+      canvas#waveform {
+        width: 100%;
+        height: 48px;
+        margin-top: 10px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--bg);
+        display: block;
+      }
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 14px;
+      }
+      .metric {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 12px;
+      }
+      .metric-label {
+        font-size: 9px;
+        color: var(--dim);
+        font-family: "JetBrains Mono", monospace;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      }
+      .metric-value {
+        font-size: 22px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+      }
+      .metric-unit {
+        font-size: 10px;
+        color: var(--dim);
+        margin-left: 2px;
+      }
+      .chart-wrap {
+        padding: 14px;
+      }
+      #prob-chart {
+        max-height: 200px;
+      }
+      .log-wrap {
+        padding: 10px 14px;
+      }
+      .log-area {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 8px 10px;
+        height: 90px;
+        overflow-y: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        color: var(--dim);
+        line-height: 1.9;
+      }
+      .log-ok {
+        color: var(--accent2);
+      }
+      .log-err {
+        color: var(--danger);
+      }
+      .log-info {
+        color: var(--accent);
+      }
+      .demo-hint {
+        padding: 8px 18px;
+        background: #fffbeb;
+        border-top: 1px solid #fde68a;
+        font-size: 10px;
+        font-family: "JetBrains Mono", monospace;
+        color: #92400e;
+        display: none;
+      }
+      .demo-hint.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <h1>Silent Speech Recognition — Avatar Control System</h1>
+        <p>
+          PVDF–NKBT–Eu Biosensor · Whisper Encoder · Conformer Classifier · IIT
+          Roorkee
+        </p>
+      </div>
+      <div class="header-right">
+        <span class="mode-badge demo" id="mode-badge" onclick="toggleMode()"
+          >DEMO MODE</span
+        >
+        <div class="ws-badge">
+          <span class="ws-dot" id="ws-dot"></span>
+          <span id="ws-label">CONNECTING</span>
+        </div>
+        <span id="clock">--:--:--</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="card avatar-card">
+        <div class="card-header">
+          <span>3D AVATAR — FACIAL ACTUATION</span>
+          <span id="model-status" style="color: var(--dim)"
+            >Loading model...</span
+          >
+        </div>
+        <canvas id="three-canvas"></canvas>
+        <div class="avatar-footer">
+          <div class="predicted-word" id="predicted-word">—</div>
+          <div class="conf-section">
+            <div class="conf-label">CONFIDENCE</div>
+            <div class="conf-bar-bg">
+              <div class="conf-bar-fill" id="conf-bar"></div>
+            </div>
+            <div class="conf-pct" id="conf-pct">—</div>
+          </div>
+        </div>
+        <div class="demo-hint show" id="demo-hint">
+          DEMO: Press keys 1–8 to trigger words · Click chips · TAB to switch to
+          LIVE mode
+        </div>
+        <div class="vocab-row" id="vocab-row"></div>
+      </div>
+
+      <div class="right-panel">
+        <div class="card record-card">
+          <div class="card-header">MICROPHONE INPUT</div>
+          <div style="padding: 14px">
+            <button
+              class="record-btn"
+              id="record-btn"
+              onclick="toggleRecording()"
+            >
+              <span id="btn-text">● RECORD</span>
+            </button>
+            <canvas id="waveform"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">LATENCY TELEMETRY</div>
+          <div class="metrics-grid">
+            <div class="metric">
+              <div class="metric-label">TOTAL RTT</div>
+              <div class="metric-value" id="m-rtt">
+                —<span class="metric-unit">ms</span>
+              </div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">INFERENCE</div>
+              <div class="metric-value" id="m-inf">
+                —<span class="metric-unit">ms</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">CLASS PROBABILITIES</div>
+          <div class="chart-wrap"><canvas id="prob-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header">SYSTEM LOG</div>
+          <div class="log-wrap"><div class="log-area" id="log-area"></div></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Three.js r160 — RPM avatars use standard PBR materials -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+      const WS_URL = "ws://localhost:8000/ws/infer";
+      const VOCAB = [
+        "HELP",
+        "PAIN",
+        "WATER",
+        "STOP",
+        "HELLO",
+        "THANK_YOU",
+        "YES",
+        "NO",
+      ];
+
+      const MODEL_URL =
+        "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb?morphTargets=ARKit,Oculus%20Visemes&textureAtlas=none";
+
+      const WORD_VISEMES = {
+        HELP: [
+          { v: "viseme_PP", d: 80 },
+          { v: "viseme_E", d: 140 },
+          { v: "viseme_nn", d: 100 },
+          { v: "viseme_PP", d: 80 },
+        ],
+        PAIN: [
+          { v: "viseme_PP", d: 100 },
+          { v: "viseme_E", d: 160 },
+          { v: "viseme_nn", d: 120 },
+        ],
+        WATER: [
+          { v: "viseme_U", d: 100 },
+          { v: "viseme_aa", d: 140 },
+          { v: "viseme_DD", d: 80 },
+          { v: "viseme_E", d: 100 },
+          { v: "viseme_RR", d: 100 },
+        ],
+        STOP: [
+          { v: "viseme_SS", d: 100 },
+          { v: "viseme_DD", d: 80 },
+          { v: "viseme_aa", d: 140 },
+          { v: "viseme_PP", d: 80 },
+        ],
+        HELLO: [
+          { v: "viseme_PP", d: 80 },
+          { v: "viseme_E", d: 140 },
+          { v: "viseme_nn", d: 80 },
+          { v: "viseme_O", d: 160 },
+        ],
+        THANK_YOU: [
+          { v: "viseme_TH", d: 100 },
+          { v: "viseme_aa", d: 100 },
+          { v: "viseme_nn", d: 80 },
+          { v: "viseme_kk", d: 80 },
+          { v: "viseme_I", d: 80 },
+          { v: "viseme_U", d: 140 },
+        ],
+        YES: [
+          { v: "viseme_I", d: 100 },
+          { v: "viseme_E", d: 160 },
+          { v: "viseme_SS", d: 120 },
+        ],
+        NO: [
+          { v: "viseme_nn", d: 120 },
+          { v: "viseme_O", d: 200 },
+        ],
+      };
+
+      const DEMO_PROBS = {};
+      VOCAB.forEach((w, i) => {
+        const p = new Array(8).fill(0);
+        p[i] = 0.78 + Math.random() * 0.17;
+        let rem = 1 - p[i];
+        for (let j = 0; j < 8; j++)
+          if (j !== i) p[j] = (rem / 7) * (0.5 + Math.random());
+        const s = p.reduce((a, b) => a + b, 0);
+        DEMO_PROBS[w] = p.map((v) => v / s);
+      });
+
+      // ═══════════════════════════════════════════════════════════════
+      // FEMALE VOICE SELECTION — multi-tier with pitch/rate safety net
+      // ═══════════════════════════════════════════════════════════════
+      let voices = [];
+      let femaleVoice = null;
+
+      function pickFemaleVoice() {
+        voices = speechSynthesis.getVoices();
+        if (voices.length === 0) return; // not ready yet, wait for event
+
+        // Tier 1: Exact known female voice names by browser/OS
+        const tier1Keywords = [
+          "samantha", // macOS — default female, highest priority
+          "karen", // macOS Australian
+          "moira", // macOS Irish
+          "tessa", // macOS South African
+          "fiona", // macOS Scottish
+          "victoria", // macOS
+          "allison", // macOS
+          "ava", // macOS
+          "susan", // macOS
+          "zira", // Windows 10/11 female
+          "hazel", // Windows UK female
+          "linda", // Windows
+          "eva", // Windows
+          "google uk english female", // Chrome on Windows/Android
+          "google us english female", // Chrome
+          "google australian english", // Chrome — tends to be female
+        ];
+        for (const kw of tier1Keywords) {
+          const match = voices.find((v) => v.name.toLowerCase().includes(kw));
+          if (match) {
+            femaleVoice = match;
+            log(`TTS voice: ${match.name}`, "ok");
+            return;
+          }
+        }
+
+        // Tier 2: Any voice explicitly labelled "female"
+        const t2 = voices.find((v) => /female/i.test(v.name));
+        if (t2) {
+          femaleVoice = t2;
+          log(`TTS voice: ${t2.name}`, "ok");
+          return;
+        }
+
+        // Tier 3: Common female first-names in English voices
+        const femaleNames =
+          /\b(alice|emma|emily|sarah|sophie|lisa|kate|anna|julia|amy|aria|nicky|serena|marie|claire|grace|rose|helen|nancy|betty|sara|olivia|ella|scarlett|linda|susan|karen|mary|jessica|jennifer|ashley|amanda|melissa|stephanie|nicole|elizabeth|heather|amber|danielle|crystal|rachel|laura|natalie|diana|brittany|kimberly|janet|deborah|virginia|martha|maria|natasha)\b/i;
+        const t3 = voices.find(
+          (v) => femaleNames.test(v.name) && /^en/i.test(v.lang),
+        );
+        if (t3) {
+          femaleVoice = t3;
+          log(`TTS voice: ${t3.name} (name-matched)`, "ok");
+          return;
+        }
+
+        // Tier 4: Any English voice — compensate with high pitch in the utterance
+        const t4 = voices.find((v) => /^en/i.test(v.lang));
+        femaleVoice = t4 || null;
+        log(
+          femaleVoice
+            ? `TTS voice: ${femaleVoice.name} (pitch-adjusted fallback)`
+            : "No voice found — browser default will be used",
+          "info",
+        );
+      }
+
+      // Chrome loads voices asynchronously; Safari/FF often have them immediately.
+      // We hook both the event AND a 300 ms timeout to cover all browsers.
+      speechSynthesis.onvoiceschanged = pickFemaleVoice;
+      setTimeout(pickFemaleVoice, 300);
+
+      // ═════════════════════════════════════════
+      // MODE
+      // ═════════════════════════════════════════
+      let isDemoMode = true;
+      window.toggleMode = function () {
+        isDemoMode = !isDemoMode;
+        document.getElementById("mode-badge").className =
+          "mode-badge " + (isDemoMode ? "demo" : "live");
+        document.getElementById("mode-badge").textContent = isDemoMode
+          ? "DEMO MODE"
+          : "LIVE MODE";
+        document.getElementById("demo-hint").className =
+          "demo-hint" + (isDemoMode ? " show" : "");
+        log(isDemoMode ? "DEMO mode (keys 1-8)" : "LIVE mode (mic)", "info");
+      };
+
+      // ═════════════════════════════════════════
+      // SCENE
+      // ═════════════════════════════════════════
+      const canvas = document.getElementById("three-canvas");
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        antialias: true,
+        alpha: true,
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(canvas.offsetWidth, 480);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.shadowMap.enabled = true;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.1;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf0f4f8);
+
+      const camera = new THREE.PerspectiveCamera(
+        22,
+        canvas.offsetWidth / 480,
+        0.01,
+        200,
+      );
+      camera.position.set(0, 1.55, 0.7);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+      const keyL = new THREE.DirectionalLight(0xffffff, 1.8);
+      keyL.position.set(1, 2, 3);
+      keyL.castShadow = true;
+      scene.add(keyL);
+      scene.add(
+        new THREE.DirectionalLight(0xe8f0ff, 0.6)
+          .translateX(-2)
+          .translateY(1)
+          .translateZ(1),
+      );
+      scene.add(
+        new THREE.DirectionalLight(0xfff0e8, 0.4).translateY(1).translateZ(-2),
+      );
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.target.set(0, 1.55, 0);
+      controls.enableZoom = true;
+      controls.minPolarAngle = Math.PI / 4;
+      controls.maxPolarAngle = (Math.PI * 3) / 4;
+      controls.update();
+
+      // ═════════════════════════════════════════
+      // MORPH TARGET STATE
+      // ═════════════════════════════════════════
+      let morphMeshes = [];
+      let morphDict = {};
+      let targetVisemes = {};
+      let blinkTimer = 0,
+        nextBlink = 2000 + Math.random() * 4000,
+        blinkPhase = 0;
+
+      // ═════════════════════════════════════════
+      // LOAD AVATAR
+      // ═════════════════════════════════════════
+      const loader = new GLTFLoader();
+      loader.load(
+        MODEL_URL,
+        (gltf) => {
+          const model = gltf.scene;
+          scene.add(model);
+
+          const meshNames = [];
+          model.traverse((obj) => {
+            if (obj.isMesh || obj.isSkinnedMesh) {
+              meshNames.push(obj.name);
+              obj.castShadow = true;
+              obj.receiveShadow = true;
+              obj.frustumCulled = false;
+              if (
+                obj.morphTargetDictionary &&
+                Object.keys(obj.morphTargetDictionary).length > 0
+              ) {
+                morphMeshes.push(obj);
+                if (
+                  Object.keys(obj.morphTargetDictionary).length >
+                  Object.keys(morphDict).length
+                ) {
+                  morphDict = { ...obj.morphTargetDictionary };
+                }
+              }
+            }
+          });
+
+          Object.keys(morphDict).forEach((n) => {
+            targetVisemes[n] = 0;
+          });
+          const vc = Object.keys(morphDict).filter((k) =>
+            k.startsWith("viseme_"),
+          ).length;
+          log(
+            `${meshNames.length} meshes, ${vc} visemes, ${morphMeshes.length} morph meshes`,
+            "info",
+          );
+          document.getElementById("model-status").textContent =
+            `${meshNames.length} mesh · ${vc} visemes · ready`;
+          log("Avatar loaded.", "ok");
+        },
+        (progress) => {
+          if (progress.total > 0)
+            document.getElementById("model-status").textContent =
+              `Loading... ${Math.round((progress.loaded / progress.total) * 100)}%`;
+        },
+        (error) => {
+          document.getElementById("model-status").textContent = "Load failed";
+          log("Error: " + error.message, "err");
+        },
+      );
+
+      // ═════════════════════════════════════════
+      // VISEME ENGINE
+      // ═════════════════════════════════════════
+      function resetVisemes() {
+        Object.keys(targetVisemes).forEach((n) => {
+          if (n.startsWith("viseme_")) targetVisemes[n] = 0;
+        });
+        if (targetVisemes["jawOpen"] !== undefined)
+          targetVisemes["jawOpen"] = 0;
+      }
+
+      function playVisemeSequence(word) {
+        const seq = WORD_VISEMES[word];
+        if (!seq) return;
+        let offset = 0;
+        seq.forEach((step) => {
+          setTimeout(() => {
+            resetVisemes();
+            targetVisemes[step.v] = 0.85;
+            if (
+              ["viseme_aa", "viseme_O", "viseme_E", "viseme_U"].includes(
+                step.v,
+              ) &&
+              targetVisemes["jawOpen"] !== undefined
+            )
+              targetVisemes["jawOpen"] = 0.3;
+          }, offset);
+          offset += step.d;
+        });
+        setTimeout(resetVisemes, offset + 120);
+      }
+
+      // ═════════════════════════════════════════
+      // ANIMATION LOOP
+      // ═════════════════════════════════════════
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const dt = clock.getDelta() * 1000;
+        controls.update();
+
+        morphMeshes.forEach((mesh) => {
+          if (!mesh.morphTargetInfluences) return;
+          const dict = mesh.morphTargetDictionary;
+          Object.keys(dict).forEach((name) => {
+            const idx = dict[name];
+            const cur = mesh.morphTargetInfluences[idx] || 0;
+            const tgt = targetVisemes[name] || 0;
+            mesh.morphTargetInfluences[idx] = THREE.MathUtils.lerp(
+              cur,
+              tgt,
+              0.25,
+            );
+          });
+        });
+
+        blinkTimer += dt;
+        if (blinkPhase === 0 && blinkTimer > nextBlink) {
+          blinkPhase = 1;
+          blinkTimer = 0;
+        }
+        if (blinkPhase === 1) {
+          const v = Math.min(1, blinkTimer / 80);
+          targetVisemes["eyeBlinkLeft"] = v;
+          targetVisemes["eyeBlinkRight"] = v;
+          if (blinkTimer > 80) {
+            blinkPhase = 2;
+            blinkTimer = 0;
+          }
+        }
+        if (blinkPhase === 2) {
+          const v = Math.max(0, 1 - blinkTimer / 100);
+          targetVisemes["eyeBlinkLeft"] = v;
+          targetVisemes["eyeBlinkRight"] = v;
+          if (blinkTimer > 100) {
+            blinkPhase = 0;
+            blinkTimer = 0;
+            nextBlink = 2000 + Math.random() * 4000;
+            targetVisemes["eyeBlinkLeft"] = 0;
+            targetVisemes["eyeBlinkRight"] = 0;
+          }
+        }
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener("resize", () => {
+        const w = canvas.offsetWidth;
+        renderer.setSize(w, 480);
+        camera.aspect = w / 480;
+        camera.updateProjectionMatrix();
+      });
+
+      // ═════════════════════════════════════════
+      // CHART + CHIPS
+      // ═════════════════════════════════════════
+      const probChart = new Chart(document.getElementById("prob-chart"), {
+        type: "bar",
+        data: {
+          labels: VOCAB,
+          datasets: [
+            {
+              data: new Array(8).fill(0),
+              backgroundColor: VOCAB.map(() => "#dbeafe"),
+              borderColor: VOCAB.map(() => "#2563eb"),
+              borderWidth: 1,
+              borderRadius: 3,
+            },
+          ],
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: {
+              min: 0,
+              max: 1,
+              ticks: {
+                font: { family: "JetBrains Mono", size: 9 },
+                color: "#6b7280",
+              },
+              grid: { color: "#f0f0f0" },
+            },
+            y: {
+              ticks: {
+                font: { family: "JetBrains Mono", size: 10 },
+                color: "#374151",
+              },
+              grid: { display: false },
+            },
+          },
+        },
+      });
+      document.getElementById("vocab-row").innerHTML = VOCAB.map(
+        (w, i) =>
+          `<span class="chip" id="chip-${w}" onclick="triggerWord('${w}')">${w}<span class="key-hint">${i + 1}</span></span>`,
+      ).join("");
+
+      // ═════════════════════════════════════════
+      // KEYBOARD DEMO
+      // ═════════════════════════════════════════
+      window.triggerWord = function (word) {
+        if (!isDemoMode) return;
+        const idx = VOCAB.indexOf(word);
+        if (idx === -1) return;
+        const probs = DEMO_PROBS[word];
+        handleResult({
+          class_label: word,
+          confidence: probs[idx],
+          probabilities: probs,
+          latency_ms: 45 + Math.random() * 30,
+          timestamps: {
+            received: performance.now(),
+            inference_start: performance.now() + 5,
+            inference_end: performance.now() + 8,
+            response_sent: performance.now() + 10,
+          },
+        });
+        log(`[DEMO] ${word}`, "info");
+      };
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          window.toggleMode();
+          return;
+        }
+        if (isDemoMode && e.key >= "1" && e.key <= "8") {
+          const i = parseInt(e.key) - 1;
+          if (i < VOCAB.length) window.triggerWord(VOCAB[i]);
+        }
+      });
+
+      // ═════════════════════════════════════════
+      // WEBSOCKET
+      // ═════════════════════════════════════════
+      let ws;
+      function connectWS() {
+        log("Connecting to backend...", "info");
+        ws = new WebSocket(WS_URL);
+        ws.binaryType = "arraybuffer";
+        ws.onopen = () => {
+          setWS(true);
+          log("WebSocket connected.", "ok");
+        };
+        ws.onmessage = (e) => {
+          // Always handle real backend results regardless of demo/live mode
+          try {
+            const data = JSON.parse(e.data);
+            if (data.error) {
+              log(`Backend error: ${data.error}`, "err");
+              return;
+            }
+            handleResult(data);
+          } catch (err) {
+            log(`Response parse error: ${err.message}`, "err");
+          }
+        };
+        ws.onerror = () => {
+          setWS(false);
+          log("WebSocket error.", "err");
+        };
+        ws.onclose = () => {
+          setWS(false);
+          log("Reconnecting in 3s...", "err");
+          setTimeout(connectWS, 3000);
+        };
+      }
+      function setWS(ok) {
+        document.getElementById("ws-dot").className =
+          "ws-dot" + (ok ? " live" : " error");
+        document.getElementById("ws-label").textContent = ok
+          ? "CONNECTED"
+          : "OFFLINE";
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // RESULT HANDLER — speak with female voice + reliable parameters
+      // ═══════════════════════════════════════════════════════════════
+      function speakWord(text) {
+        window.speechSynthesis.cancel();
+
+        // Re-attempt voice selection in case voices weren't ready on first load
+        if (!femaleVoice) pickFemaleVoice();
+
+        const utter = new SpeechSynthesisUtterance(text.replace(/_/g, " "));
+
+        // Core female voice parameters
+        utter.rate = 0.88; // slightly slower — more natural, less robotic
+        utter.pitch = 1.4; // clearly feminine; Web Speech API range is 0–2
+        utter.volume = 1.0;
+
+        if (femaleVoice) {
+          utter.voice = femaleVoice;
+          // If we fell back to a non-ideal voice, push pitch even higher
+          const isKnownFemale =
+            /samantha|karen|moira|tessa|fiona|victoria|zira|hazel|google.*female/i.test(
+              femaleVoice.name,
+            );
+          if (!isKnownFemale) utter.pitch = 1.6;
+        }
+
+        window.speechSynthesis.speak(utter);
+      }
+
+      function handleResult(data) {
+        // Restore record button (was disabled during processing)
+        const btn = document.getElementById("record-btn");
+        if (btn) {
+          btn.disabled = false;
+          document.getElementById("btn-text").textContent = "● RECORD";
+        }
+
+        const {
+          class_label: word,
+          confidence: conf,
+          probabilities: probs,
+          latency_ms: latency,
+          timestamps: ts,
+        } = data;
+        const wordEl = document.getElementById("predicted-word");
+        wordEl.classList.remove("show");
+        setTimeout(() => {
+          wordEl.textContent = word;
+          wordEl.classList.add("show");
+        }, 40);
+        document.getElementById("conf-bar").style.width =
+          (conf * 100).toFixed(1) + "%";
+        document.getElementById("conf-pct").textContent =
+          (conf * 100).toFixed(1) + "%";
+        document
+          .querySelectorAll(".chip")
+          .forEach((c) => c.classList.remove("active"));
+        const chip = document.getElementById("chip-" + word);
+        if (chip) chip.classList.add("active");
+        const topIdx = probs.indexOf(Math.max(...probs));
+        probChart.data.datasets[0].data = probs;
+        probChart.data.datasets[0].backgroundColor = probs.map((_, i) =>
+          i === topIdx ? "#dbeafe" : "#f3f4f6",
+        );
+        probChart.data.datasets[0].borderColor = probs.map((_, i) =>
+          i === topIdx ? "#2563eb" : "#d1d5db",
+        );
+        probChart.update("none");
+        document.getElementById("m-rtt").innerHTML =
+          latency.toFixed(0) + '<span class="metric-unit">ms</span>';
+        document.getElementById("m-inf").innerHTML =
+          (ts.inference_end - ts.inference_start).toFixed(0) +
+          '<span class="metric-unit">ms</span>';
+        playVisemeSequence(word);
+        speakWord(word); // ← uses fixed female voice function
+        log(
+          `→ ${word} | conf: ${(conf * 100).toFixed(1)}% | RTT: ${latency.toFixed(0)}ms`,
+          "ok",
+        );
+      }
+
+      // ═════════════════════════════════════════
+      // RECORDING
+      // ═════════════════════════════════════════
+      let mediaRecorder,
+        audioChunks = [],
+        isRecording = false,
+        animCtx,
+        analyser,
+        animFrame;
+      window.toggleRecording = async function () {
+        window.speechSynthesis.cancel();
+        if (!isRecording) {
+          // Auto-switch to LIVE mode when user presses Record
+          if (isDemoMode) {
+            isDemoMode = false;
+            document.getElementById("mode-badge").className = "mode-badge live";
+            document.getElementById("mode-badge").textContent = "LIVE MODE";
+            document.getElementById("demo-hint").className = "demo-hint";
+            log("Auto-switched to LIVE mode for recording.", "info");
+          }
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              audio: { sampleRate: 16000, channelCount: 1 },
+            });
+            audioChunks = [];
+            animCtx = new AudioContext();
+            analyser = animCtx.createAnalyser();
+            analyser.fftSize = 256;
+            animCtx.createMediaStreamSource(stream).connect(analyser);
+            drawWaveform();
+            const mt = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+              ? "audio/webm;codecs=opus"
+              : "audio/webm";
+            mediaRecorder = new MediaRecorder(stream, { mimeType: mt });
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            mediaRecorder.onstop = sendAudio;
+            mediaRecorder.start();
+            isRecording = true;
+            document.getElementById("record-btn").classList.add("recording");
+            document.getElementById("btn-text").textContent =
+              "■ STOP RECORDING";
+            log(`Recording (${mt}) — speak a word clearly...`, "info");
+          } catch (e) {
+            log("Mic error: " + e.message, "err");
+          }
+        } else {
+          mediaRecorder.stop();
+          mediaRecorder.stream.getTracks().forEach((t) => t.stop());
+          if (animFrame) cancelAnimationFrame(animFrame);
+          if (animCtx) animCtx.close();
+          isRecording = false;
+          document.getElementById("record-btn").classList.remove("recording");
+          document.getElementById("btn-text").textContent = "⏳ PROCESSING...";
+          document.getElementById("record-btn").disabled = true;
+          log("Audio sent — waiting for inference result...", "info");
+        }
+      };
+      async function sendAudio() {
+        // Re-enable button regardless of what happens next
+        const btn = document.getElementById("record-btn");
+        const restoreBtn = () => {
+          btn.disabled = false;
+          document.getElementById("btn-text").textContent = "● RECORD";
+        };
+
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+          log("Not connected to backend. Is the server running?", "err");
+          restoreBtn();
+          return;
+        }
+        if (audioChunks.length === 0) {
+          log("No audio captured.", "err");
+          restoreBtn();
+          return;
+        }
+
+        try {
+          const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
+          // Send as ArrayBuffer — backend receives bytes directly
+          const arrayBuf = await blob.arrayBuffer();
+          ws.send(arrayBuf);
+          log(
+            `Sent ${(blob.size / 1024).toFixed(1)} KB to backend — awaiting result...`,
+            "info",
+          );
+        } catch (e) {
+          log(`Send error: ${e.message}`, "err");
+          restoreBtn();
+          return;
+        }
+
+        // Restore button after a timeout in case backend never responds
+        setTimeout(restoreBtn, 10000);
+      }
+      function drawWaveform() {
+        const c = document.getElementById("waveform"),
+          ctx = c.getContext("2d");
+        c.width = c.offsetWidth;
+        c.height = c.offsetHeight;
+        const W = c.width,
+          H = c.height,
+          data = new Uint8Array(analyser.frequencyBinCount);
+        function draw() {
+          animFrame = requestAnimationFrame(draw);
+          analyser.getByteTimeDomainData(data);
+          ctx.fillStyle = "#f8f9fa";
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = "#2563eb";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          data.forEach((v, i) => {
+            const y = ((v / 128) * H) / 2;
+            i === 0 ? ctx.moveTo(0, y) : ctx.lineTo(i * (W / data.length), y);
+          });
+          ctx.stroke();
+        }
+        draw();
+      }
+      function log(msg, type = "") {
+        const area = document.getElementById("log-area"),
+          div = document.createElement("div");
+        div.className =
+          type === "ok"
+            ? "log-ok"
+            : type === "err"
+              ? "log-err"
+              : type === "info"
+                ? "log-info"
+                : "";
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+      }
+      setInterval(() => {
+        document.getElementById("clock").textContent =
+          new Date().toLocaleTimeString();
+      }, 1000);
+      connectWS();
+    </script>
+  </body>
+</html>
