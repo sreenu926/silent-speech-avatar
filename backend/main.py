@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,10 +13,26 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+pipeline = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # ── Startup: load model ONCE before accepting any requests ──
+    global pipeline
+    logger.info("Loading ML model at startup...")
+    model = load_model()
+    pipeline = InferencePipeline(model=model)
+    logger.info("Model and Whisper ready. Server accepting requests.")
+    yield
+    # ── Shutdown (nothing to clean up) ──
+
+
 app = FastAPI(
     title="Biosensor Speech Recognition Server",
     description="Real-time WebSocket inference: Whisper Encoder + MLP Classifier",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -25,18 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-pipeline = None
-
 
 def get_pipeline():
-    global pipeline
-
-    if pipeline is None:
-        logger.info("Loading ML model for first request...")
-        model = load_model()
-        pipeline = InferencePipeline(model=model)
-        logger.info("Model loaded successfully.")
-
     return pipeline
 
 
