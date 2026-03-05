@@ -32,21 +32,25 @@
         color: var(--text);
         min-height: 100vh;
       }
+
+      /* ── HEADER ── */
       header {
         background: var(--surface);
         border-bottom: 1px solid var(--border);
-        padding: 14px 32px;
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
       }
       .header-left h1 {
-        font-size: 15px;
+        font-size: 13px;
         font-weight: 600;
         letter-spacing: -0.3px;
       }
       .header-left p {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--dim);
         margin-top: 2px;
         font-family: "JetBrains Mono", monospace;
@@ -54,10 +58,11 @@
       .header-right {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 8px;
         font-size: 11px;
         font-family: "JetBrains Mono", monospace;
         color: var(--dim);
+        flex-wrap: wrap;
       }
       .ws-badge {
         display: flex;
@@ -103,14 +108,18 @@
         background: #f0fdf4;
         color: #15803d;
       }
+
+      /* ── MAIN LAYOUT ── */
       main {
         display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 20px;
-        padding: 24px 32px;
+        grid-template-columns: 1fr 320px;
+        gap: 16px;
+        padding: 16px;
         max-width: 1280px;
         margin: 0 auto;
       }
+
+      /* ── CARDS ── */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -118,9 +127,9 @@
         overflow: hidden;
       }
       .card-header {
-        padding: 12px 18px;
+        padding: 10px 14px;
         border-bottom: 1px solid var(--border);
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
         color: var(--dim);
         letter-spacing: 0.8px;
@@ -136,26 +145,28 @@
       }
       #three-canvas {
         width: 100%;
-        height: 480px;
+        height: 420px;
         display: block;
       }
       .avatar-footer {
-        padding: 20px 24px;
+        padding: 14px 18px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+        gap: 10px;
       }
       .predicted-word {
         font-family: "JetBrains Mono", monospace;
-        font-size: 36px;
+        font-size: 32px;
         font-weight: 600;
         color: var(--accent);
         letter-spacing: -1px;
         opacity: 0;
         transform: translateY(6px);
         transition: all 0.25s ease;
-        min-width: 200px;
+        min-width: 0;
       }
       .predicted-word.show {
         opacity: 1;
@@ -171,7 +182,7 @@
         margin-bottom: 6px;
       }
       .conf-bar-bg {
-        width: 160px;
+        width: 120px;
         height: 5px;
         background: var(--border);
         border-radius: 3px;
@@ -186,7 +197,7 @@
         transition: width 0.4s ease;
       }
       .conf-pct {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 600;
         font-family: "JetBrains Mono", monospace;
         margin-top: 4px;
@@ -195,7 +206,7 @@
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
-        padding: 12px 18px;
+        padding: 10px 14px;
         border-top: 1px solid var(--border);
       }
       .chip {
@@ -224,13 +235,15 @@
         color: #9ca3af;
         margin-left: 3px;
       }
+
+      /* ── RIGHT PANEL ── */
       .right-panel {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
       }
       .record-card {
-        padding: 18px;
+        padding: 14px;
       }
       .record-btn {
         width: 100%;
@@ -245,6 +258,7 @@
         border-radius: 6px;
         cursor: pointer;
         transition: all 0.2s;
+        touch-action: manipulation;
       }
       .record-btn:hover {
         background: #fef2f2;
@@ -265,14 +279,14 @@
       .metrics-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        padding: 14px;
+        gap: 8px;
+        padding: 12px;
       }
       .metric {
         background: var(--bg);
         border: 1px solid var(--border);
         border-radius: 6px;
-        padding: 10px 12px;
+        padding: 8px 10px;
       }
       .metric-label {
         font-size: 9px;
@@ -282,7 +296,7 @@
         margin-bottom: 4px;
       }
       .metric-value {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 600;
         font-family: "JetBrains Mono", monospace;
       }
@@ -292,10 +306,10 @@
         margin-left: 2px;
       }
       .chart-wrap {
-        padding: 14px;
+        padding: 12px;
       }
       #prob-chart {
-        max-height: 200px;
+        max-height: 180px;
       }
       .log-wrap {
         padding: 10px 14px;
@@ -322,7 +336,7 @@
         color: var(--accent);
       }
       .demo-hint {
-        padding: 8px 18px;
+        padding: 8px 14px;
         background: #fffbeb;
         border-top: 1px solid #fde68a;
         font-size: 10px;
@@ -332,6 +346,95 @@
       }
       .demo-hint.show {
         display: block;
+      }
+
+      /* ── TABLET ── */
+      @media (max-width: 768px) {
+        main {
+          grid-template-columns: 1fr;
+          padding: 12px;
+          gap: 12px;
+        }
+        .right-panel {
+          order: -1;
+        }
+        #three-canvas {
+          height: 320px;
+        }
+        .predicted-word {
+          font-size: 26px;
+        }
+        .conf-bar-bg {
+          width: 100px;
+        }
+        .conf-pct {
+          font-size: 16px;
+        }
+        .avatar-footer {
+          padding: 12px 14px;
+        }
+        .metrics-grid {
+          padding: 10px;
+          gap: 8px;
+        }
+        .metric-value {
+          font-size: 18px;
+        }
+        #prob-chart {
+          max-height: 160px;
+        }
+        .header-left h1 {
+          font-size: 12px;
+        }
+        .header-left p {
+          display: none;
+        }
+        #clock {
+          display: none;
+        }
+      }
+
+      /* ── SMALL MOBILE ── */
+      @media (max-width: 480px) {
+        header {
+          padding: 10px 12px;
+        }
+        main {
+          padding: 8px;
+          gap: 8px;
+        }
+        #three-canvas {
+          height: 260px;
+        }
+        .predicted-word {
+          font-size: 22px;
+        }
+        .record-btn {
+          padding: 16px;
+          font-size: 13px;
+        }
+        .chip {
+          padding: 6px 10px;
+          font-size: 10px;
+        }
+        .metric-value {
+          font-size: 16px;
+        }
+        .log-wrap {
+          padding: 8px 10px;
+        }
+        .log-area {
+          height: 70px;
+          font-size: 9px;
+        }
+        .card-header {
+          padding: 8px 12px;
+          font-size: 9px;
+        }
+        .vocab-row {
+          padding: 8px 10px;
+          gap: 5px;
+        }
       }
     </style>
   </head>
@@ -616,7 +719,8 @@
         alpha: true,
       });
       renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.offsetWidth, 480);
+      const canvasH = () => canvas.offsetHeight || 320;
+      renderer.setSize(canvas.offsetWidth, canvasH());
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.shadowMap.enabled = true;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -627,7 +731,7 @@
 
       const camera = new THREE.PerspectiveCamera(
         22,
-        canvas.offsetWidth / 480,
+        canvas.offsetWidth / canvasH(),
         0.01,
         200,
       );
@@ -813,8 +917,9 @@
 
       window.addEventListener("resize", () => {
         const w = canvas.offsetWidth;
-        renderer.setSize(w, 480);
-        camera.aspect = w / 480;
+        const h = canvasH();
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
         camera.updateProjectionMatrix();
       });
 
