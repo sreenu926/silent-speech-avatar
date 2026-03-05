@@ -32,25 +32,21 @@
         color: var(--text);
         min-height: 100vh;
       }
-
-      /* ── HEADER ── */
       header {
         background: var(--surface);
         border-bottom: 1px solid var(--border);
-        padding: 12px 16px;
+        padding: 14px 32px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 8px;
       }
       .header-left h1 {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
         letter-spacing: -0.3px;
       }
       .header-left p {
-        font-size: 10px;
+        font-size: 11px;
         color: var(--dim);
         margin-top: 2px;
         font-family: "JetBrains Mono", monospace;
@@ -58,11 +54,10 @@
       .header-right {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 16px;
         font-size: 11px;
         font-family: "JetBrains Mono", monospace;
         color: var(--dim);
-        flex-wrap: wrap;
       }
       .ws-badge {
         display: flex;
@@ -108,18 +103,14 @@
         background: #f0fdf4;
         color: #15803d;
       }
-
-      /* ── MAIN LAYOUT ── */
       main {
         display: grid;
         grid-template-columns: 1fr 320px;
         gap: 16px;
-        padding: 16px;
+        padding: 16px 24px;
         max-width: 1280px;
         margin: 0 auto;
       }
-
-      /* ── CARDS ── */
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -127,9 +118,9 @@
         overflow: hidden;
       }
       .card-header {
-        padding: 10px 14px;
+        padding: 12px 18px;
         border-bottom: 1px solid var(--border);
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 600;
         color: var(--dim);
         letter-spacing: 0.8px;
@@ -145,28 +136,26 @@
       }
       #three-canvas {
         width: 100%;
-        height: 420px;
+        height: 460px;
         display: block;
       }
       .avatar-footer {
-        padding: 14px 18px;
+        padding: 20px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         border-top: 1px solid var(--border);
-        flex-wrap: wrap;
-        gap: 10px;
       }
       .predicted-word {
         font-family: "JetBrains Mono", monospace;
-        font-size: 32px;
+        font-size: 36px;
         font-weight: 600;
         color: var(--accent);
         letter-spacing: -1px;
         opacity: 0;
         transform: translateY(6px);
         transition: all 0.25s ease;
-        min-width: 0;
+        min-width: 200px;
       }
       .predicted-word.show {
         opacity: 1;
@@ -182,7 +171,7 @@
         margin-bottom: 6px;
       }
       .conf-bar-bg {
-        width: 120px;
+        width: 160px;
         height: 5px;
         background: var(--border);
         border-radius: 3px;
@@ -197,7 +186,7 @@
         transition: width 0.4s ease;
       }
       .conf-pct {
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
         font-family: "JetBrains Mono", monospace;
         margin-top: 4px;
@@ -206,7 +195,7 @@
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
-        padding: 10px 14px;
+        padding: 12px 18px;
         border-top: 1px solid var(--border);
       }
       .chip {
@@ -235,15 +224,13 @@
         color: #9ca3af;
         margin-left: 3px;
       }
-
-      /* ── RIGHT PANEL ── */
       .right-panel {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
       }
       .record-card {
-        padding: 14px;
+        padding: 18px;
       }
       .record-btn {
         width: 100%;
@@ -258,7 +245,6 @@
         border-radius: 6px;
         cursor: pointer;
         transition: all 0.2s;
-        touch-action: manipulation;
       }
       .record-btn:hover {
         background: #fef2f2;
@@ -279,14 +265,14 @@
       .metrics-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        padding: 12px;
+        gap: 10px;
+        padding: 14px;
       }
       .metric {
         background: var(--bg);
         border: 1px solid var(--border);
         border-radius: 6px;
-        padding: 8px 10px;
+        padding: 10px 12px;
       }
       .metric-label {
         font-size: 9px;
@@ -296,7 +282,7 @@
         margin-bottom: 4px;
       }
       .metric-value {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 600;
         font-family: "JetBrains Mono", monospace;
       }
@@ -306,10 +292,10 @@
         margin-left: 2px;
       }
       .chart-wrap {
-        padding: 12px;
+        padding: 14px;
       }
       #prob-chart {
-        max-height: 180px;
+        max-height: 200px;
       }
       .log-wrap {
         padding: 10px 14px;
@@ -336,7 +322,7 @@
         color: var(--accent);
       }
       .demo-hint {
-        padding: 8px 14px;
+        padding: 8px 18px;
         background: #fffbeb;
         border-top: 1px solid #fde68a;
         font-size: 10px;
@@ -350,19 +336,54 @@
 
       /* ── TABLET ── */
       @media (max-width: 768px) {
+        header {
+          padding: 10px 14px;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .header-left p {
+          display: none;
+        }
+        .header-left h1 {
+          font-size: 12px;
+        }
+        .header-right {
+          gap: 8px;
+        }
+        #clock {
+          display: none;
+        }
+
         main {
           grid-template-columns: 1fr;
-          padding: 12px;
-          gap: 12px;
+          padding: 10px;
+          gap: 10px;
+        }
+
+        /* Avatar FIRST, then right panel below */
+        .avatar-card {
+          order: 1;
         }
         .right-panel {
-          order: -1;
+          order: 2;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 10px;
         }
+        .right-panel > .card {
+          flex: 1 1 calc(50% - 5px);
+          min-width: 140px;
+        }
+        .right-panel > .record-card {
+          flex: 1 1 100%;
+        }
+
         #three-canvas {
-          height: 320px;
+          height: 300px;
         }
         .predicted-word {
-          font-size: 26px;
+          font-size: 24px;
+          min-width: 0;
         }
         .conf-bar-bg {
           width: 100px;
@@ -373,45 +394,41 @@
         .avatar-footer {
           padding: 12px 14px;
         }
-        .metrics-grid {
-          padding: 10px;
-          gap: 8px;
-        }
         .metric-value {
           font-size: 18px;
         }
         #prob-chart {
-          max-height: 160px;
+          max-height: 150px;
         }
-        .header-left h1 {
-          font-size: 12px;
-        }
-        .header-left p {
-          display: none;
-        }
-        #clock {
-          display: none;
+        .log-area {
+          height: 70px;
         }
       }
 
       /* ── SMALL MOBILE ── */
       @media (max-width: 480px) {
-        header {
-          padding: 10px 12px;
-        }
         main {
           padding: 8px;
           gap: 8px;
+        }
+        header {
+          padding: 8px 12px;
         }
         #three-canvas {
           height: 260px;
         }
         .predicted-word {
-          font-size: 22px;
+          font-size: 20px;
+        }
+        .right-panel {
+          flex-direction: column;
+        }
+        .right-panel > .card {
+          flex: 1 1 100%;
         }
         .record-btn {
-          padding: 16px;
-          font-size: 13px;
+          padding: 18px;
+          font-size: 14px;
         }
         .chip {
           padding: 6px 10px;
@@ -420,11 +437,8 @@
         .metric-value {
           font-size: 16px;
         }
-        .log-wrap {
-          padding: 8px 10px;
-        }
         .log-area {
-          height: 70px;
+          height: 60px;
           font-size: 9px;
         }
         .card-header {
@@ -434,6 +448,19 @@
         .vocab-row {
           padding: 8px 10px;
           gap: 5px;
+        }
+        .avatar-footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .conf-section {
+          align-self: stretch;
+          text-align: left;
+        }
+        .conf-bar-bg {
+          margin-left: 0;
+          width: 100%;
         }
       }
     </style>
@@ -719,8 +746,8 @@
         alpha: true,
       });
       renderer.setPixelRatio(window.devicePixelRatio);
-      const canvasH = () => canvas.offsetHeight || 320;
-      renderer.setSize(canvas.offsetWidth, canvasH());
+      const getH = () => canvas.offsetHeight || 460;
+      renderer.setSize(canvas.offsetWidth, getH());
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.shadowMap.enabled = true;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -731,11 +758,11 @@
 
       const camera = new THREE.PerspectiveCamera(
         22,
-        canvas.offsetWidth / canvasH(),
+        canvas.offsetWidth / getH(),
         0.01,
         200,
       );
-      camera.position.set(0, 1.55, 0.7);
+      camera.position.set(0, 1.58, 1.1);
 
       scene.add(new THREE.AmbientLight(0xffffff, 1.0));
       const keyL = new THREE.DirectionalLight(0xffffff, 1.8);
@@ -755,7 +782,7 @@
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
-      controls.target.set(0, 1.55, 0);
+      controls.target.set(0, 1.58, 0);
       controls.enableZoom = true;
       controls.minPolarAngle = Math.PI / 4;
       controls.maxPolarAngle = (Math.PI * 3) / 4;
@@ -917,7 +944,7 @@
 
       window.addEventListener("resize", () => {
         const w = canvas.offsetWidth;
-        const h = canvasH();
+        const h = getH();
         renderer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
