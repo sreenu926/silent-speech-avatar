@@ -592,7 +592,7 @@
         location.protocol === "file:";
       const WS_URL = isLocal
         ? "ws://localhost:8000/ws/infer"
-        : "wss://silent-speech-avatar-production.up.railway.app/ws/infer";
+        : "wss://silent-speech-avatar.onrender.com/ws/infer";
       const VOCAB = [
         "HELP",
         "PAIN",
@@ -1329,6 +1329,18 @@
         document.getElementById("clock").textContent =
           new Date().toLocaleTimeString();
       }, 1000);
+
+      // Keep Render server alive — ping every 4 minutes to prevent cold starts
+      const HEALTH_URL = WS_URL.replace("wss://", "https://")
+        .replace("ws://", "http://")
+        .replace("/ws/infer", "/health");
+      setInterval(
+        () => {
+          fetch(HEALTH_URL).catch(() => {});
+        },
+        4 * 60 * 1000,
+      );
+
       connectWS();
     </script>
   </body>
