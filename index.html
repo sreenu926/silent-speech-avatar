@@ -105,11 +105,12 @@
       }
       main {
         display: grid;
-        grid-template-columns: 1fr 320px;
+        grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
         gap: 16px;
-        padding: 16px 24px;
-        max-width: 1280px;
-        margin: 0 auto;
+        padding: 16px;
+        width: 100%;
+        max-width: 1600px;
+        margin: auto;
       }
       .card {
         background: var(--surface);
@@ -136,8 +137,11 @@
       }
       #three-canvas {
         width: 100%;
-        height: auto;
+        height: clamp(260px, 50vh, 460px);
         display: block;
+      }
+      canvas {
+        max-width: 100%;
       }
       .avatar-footer {
         padding: 20px 24px;
@@ -225,8 +229,8 @@
         margin-left: 3px;
       }
       .right-panel {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr;
         gap: 16px;
       }
       .record-card {
@@ -332,6 +336,17 @@
       }
       .demo-hint.show {
         display: block;
+      }
+
+      /* ── ULTRA-WIDE / LARGE MONITORS ── */
+      @media (min-width: 1600px) {
+        main {
+          grid-template-columns: 1fr 380px;
+          max-width: 1800px;
+        }
+        #three-canvas {
+          height: 520px;
+        }
       }
 
       /* ── TABLET ── */
@@ -745,12 +760,11 @@
         antialias: true,
         alpha: true,
       });
-      // Use CSS breakpoint-aware heights — never read offsetHeight (unreliable during resize)
-      const getH = () =>
-        window.innerWidth <= 480 ? 250 : window.innerWidth <= 800 ? 300 : 460;
+      // Use CSS clamp() for height — canvas.clientHeight is always correct
+      const getH = () => canvas.clientHeight || 460;
 
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.parentElement.clientWidth, getH());
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(canvas.clientWidth, getH());
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.shadowMap.enabled = true;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -761,7 +775,7 @@
 
       const camera = new THREE.PerspectiveCamera(
         22,
-        canvas.parentElement.clientWidth / getH(),
+        canvas.clientWidth / getH(),
         0.01,
         200,
       );
@@ -945,10 +959,10 @@
       }
       animate();
 
-      // ResizeObserver fires after layout is fully settled — no manual refresh needed
+      // ResizeObserver fires after layout is fully settled — CSS clamp drives the height
       const resizeObserver = new ResizeObserver(() => {
-        const w = canvas.parentElement.clientWidth;
-        const h = getH();
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
         renderer.setSize(w, h);
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
@@ -958,8 +972,8 @@
       // Also handle orientation change on mobile (extra safety)
       window.addEventListener("orientationchange", () => {
         setTimeout(() => {
-          const w = canvas.parentElement.clientWidth;
-          const h = getH();
+          const w = canvas.clientWidth;
+          const h = canvas.clientHeight;
           renderer.setSize(w, h);
           camera.aspect = w / h;
           camera.updateProjectionMatrix();
