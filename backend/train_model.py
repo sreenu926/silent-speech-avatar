@@ -12,7 +12,8 @@ import random
 # CONFIG
 # ==========================
 DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
-DATA_DIR = "dataset_split"
+WHISPER_DEVICE = "cpu"  # Whisper must run on CPU — MPS causes silent tensor mismatch
+DATA_DIR = "../dataset_split"
 NUM_CLASSES = 8
 EPOCHS = 60
 LR = 1e-3
@@ -27,7 +28,7 @@ print("Using device:", DEVICE)
 # ==========================
 # WHISPER
 # ==========================
-whisper_model = whisper.load_model("base").to(DEVICE)
+whisper_model = whisper.load_model("tiny").to(WHISPER_DEVICE)
 whisper_model.eval()
 for param in whisper_model.parameters():
     param.requires_grad = False
@@ -68,7 +69,7 @@ def augment_audio(audio: np.ndarray, sr: int = 16000) -> list:
 # ==========================
 def extract_embedding(audio: np.ndarray) -> torch.Tensor:
     audio = whisper.pad_or_trim(audio)
-    mel = whisper.log_mel_spectrogram(audio).to(DEVICE)
+    mel = whisper.log_mel_spectrogram(audio).to(WHISPER_DEVICE)
     with torch.no_grad():
         embedding = whisper_model.encoder(mel.unsqueeze(0))
     return embedding.mean(dim=1).squeeze(0)

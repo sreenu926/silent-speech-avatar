@@ -80,7 +80,7 @@ async def websocket_infer(websocket: WebSocket):
 
             logger.info(f"Received {len(raw_bytes)} bytes")
 
-            result = await pipeline_instance.run(raw_bytes)
+            result = pipeline_instance.run(raw_bytes)
 
             await websocket.send_json(result)
 

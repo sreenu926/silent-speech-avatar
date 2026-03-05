@@ -19,6 +19,7 @@ import whisper
 logger = logging.getLogger(__name__)
 
 DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
+WHISPER_DEVICE = "cpu"  # Whisper must run on CPU — MPS causes silent tensor mismatch
 VOCABULARY = ["HELP", "PAIN", "WATER", "STOP", "HELLO", "THANK_YOU", "YES", "NO"]
 
 
@@ -80,22 +81,22 @@ class InferencePipeline:
         self.model  = model
         self.device = DEVICE
 
-        logger.info("Loading Whisper base encoder...")
-        self.whisper_model = whisper.load_model("base").to(self.device)
+        logger.info("Loading Whisper tiny encoder on CPU...")
+        self.whisper_model = whisper.load_model("tiny").to(WHISPER_DEVICE)
         self.whisper_model.eval()
         for p in self.whisper_model.parameters():
             p.requires_grad = False
-        logger.info(f"Whisper ready on {self.device}.")
+        logger.info(f"Whisper ready on {WHISPER_DEVICE}. Classifier on {self.device}.")
 
     @torch.no_grad()
     def _extract_embedding(self, audio: np.ndarray) -> torch.Tensor:
-        """float32 numpy → (512,) Whisper encoder embedding."""
+        """float32 numpy → Whisper tiny encoder embedding (384-dim) on CPU."""
         audio = whisper.pad_or_trim(audio)
-        mel   = whisper.log_mel_spectrogram(audio).to(self.device)
+        mel   = whisper.log_mel_spectrogram(audio).to(WHISPER_DEVICE)
         enc   = self.whisper_model.encoder(mel.unsqueeze(0))
-        return enc.mean(dim=1).squeeze(0)
+        return enc.mean(dim=1).squeeze(0).to(self.device)
 
-    async def run(self, raw_bytes: bytes) -> dict:
+    def run(self, raw_bytes: bytes) -> dict:
         t_received = time.perf_counter() * 1000
 
         # 1. Decode browser audio → float32 PCM

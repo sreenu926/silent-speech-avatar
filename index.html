@@ -584,8 +584,15 @@
       import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-      const WS_URL =
-        "wss://silent-speech-avatar-production.up.railway.app/ws/infer";
+      // Auto-detect: use local server when opened as a file or on localhost,
+      // otherwise use the Railway production URL.
+      const isLocal =
+        location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1" ||
+        location.protocol === "file:";
+      const WS_URL = isLocal
+        ? "ws://localhost:8000/ws/infer"
+        : "wss://silent-speech-avatar-production.up.railway.app/ws/infer";
       const VOCAB = [
         "HELP",
         "PAIN",

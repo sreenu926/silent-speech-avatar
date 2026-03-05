@@ -35,7 +35,7 @@ NUM_CLASSES = len(VOCABULARY)
 # Must match train_model.py EXACTLY (same layer sizes, same dropout values).
 # ─────────────────────────────────────────────
 class Classifier(nn.Module):
-    def __init__(self, input_dim: int = 512, num_classes: int = NUM_CLASSES):
+    def __init__(self, input_dim: int = 384, num_classes: int = NUM_CLASSES):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(input_dim, 512),
@@ -64,7 +64,7 @@ def load_model(checkpoint_path: str | None = None) -> Classifier:
     """
     path = checkpoint_path or os.environ.get("CHECKPOINT_PATH", DEFAULT_CHECKPOINT)
 
-    model = Classifier(input_dim=512, num_classes=NUM_CLASSES).to(DEVICE)
+    model = Classifier(input_dim=384, num_classes=NUM_CLASSES).to(DEVICE)
 
     if not os.path.exists(path):
         logger.warning(
