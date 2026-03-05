@@ -25,7 +25,8 @@ async def lifespan(app: FastAPI):
     pipeline = InferencePipeline(model=model)
     logger.info("Model and Whisper ready. Server accepting requests.")
     yield
-    # ── Shutdown (nothing to clean up) ──
+    # ── Shutdown ──
+    logger.info("Server shutting down.")
 
 
 app = FastAPI(
